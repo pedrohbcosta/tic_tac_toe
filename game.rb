@@ -155,3 +155,112 @@ class ComputerPlayer
     available_spaces.sample.to_i
   end
 end
+
+class Game
+  def initialize
+    @board = Board.new
+    prepare
+  end
+
+  def start
+    game_loop
+    @board.display_board
+    print_game_result
+  end
+
+  private
+
+  def prepare
+    game_mode
+    instantiate_players
+    @current_player = @player1
+  end
+
+  def game_loop
+    loop do
+      @board.display_board
+      puts "#{current_player_name}, it's your turn to play."
+      move = @current_player.get_spot(@board)
+      break if @board.game_is_over?
+
+      switch_players
+    end
+  end
+
+  def game_mode
+    loop do
+      puts 'Please, select the game mode: 1 for PvP, 2 for PvC or 3 for CvC'
+      print '> '
+      mode = gets.chomp
+      case mode
+      when '1'
+        @mode = 'pvp'
+        break
+      when '2'
+        @mode = 'pvc'
+        break
+      when '3'
+        @mode = 'cvc'
+        break
+      else
+        puts 'Invalid game mode selected. Please select a valid game mode'
+      end
+    end
+  end
+
+  def instantiate_players
+    case @mode
+    when 'pvp'
+      @player1 = Player.new('■'.green)
+      @player2 = Player.new('x'.pink)
+    when 'pvc'
+      set_difficulty
+      @player1 = Player.new('■'.green)
+      @player2 = ComputerPlayer.new('x'.pink, @difficulty)
+    when 'cvc'
+      set_difficulty
+      @player1 = ComputerPlayer.new('■'.green, @difficulty)
+      @player2 = ComputerPlayer.new('x'.pink, @difficulty)
+    end
+  end
+
+  def set_difficulty
+    loop do
+      puts 'Please, select 1 for easy and 2 for hard'
+      print '> '
+      difficulty = gets.chomp
+      case difficulty
+      when '1'
+        @difficulty = 'easy'
+        break
+      when '2'
+        @difficulty = 'hard'
+        break
+      else
+        puts 'Invalid difficulty selected. Please select a valid difficulty.'
+      end
+    end
+  end
+
+  def switch_players
+    @current_player = @current_player == @player1 ? @player2 : @player1
+  end
+
+  def current_player_name
+    if @current_player == @player1
+      'Player 1'.green
+    else
+      'Player 2'.pink
+    end
+  end
+
+  def print_game_result
+    if @board.tie?
+      puts "It's a tie!\n"
+    elsif @current_player == @player1
+      puts "Player 1 wins!\n"
+    else
+      puts "Player 2 wins!\n"
+    end
+  end
+end
